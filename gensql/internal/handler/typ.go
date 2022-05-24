@@ -39,7 +39,7 @@ func (t TypeGenerator) Filter(context *generator.Context, typ *types.Type) bool 
 
 func (t TypeGenerator) Namers(context *generator.Context) namer.NameSystems {
 	return namer.NameSystems{
-		gencore.NameSystemRaw: namer.NewRawNamer(t.Package.Path, t.ImportTracker),
+		gencore.NameSystemRaw: gencore.NewRawNamer(t.Package.Path, t.ImportTracker),
 	}
 }
 
@@ -53,8 +53,11 @@ type {{.Type|raw}}Impl struct {
 	gencore.FatalfOnErr(err)
 	err = tmpl.Execute(writer, typeArgs)
 	gencore.FatalfOnErr(err)
+	typeAnnotations := make(map[string]gencore.Annotation, 0)
+	typeAnnotations[t.Annotation.FullName()] = t.Annotation
 	for methodName, methodType := range typ.Methods {
-		methodArgs := gencore.NewMethodArgs(typ.Name.Name+"Impl", typ, methodName, methodType)
+
+		methodArgs := gencore.NewMethodArgs(typ.Name.Name+"Impl", typ, typeAnnotations, methodName, methodType)
 		GenerateMethod(context, methodArgs, writer, t.ImportTracker)
 	}
 
@@ -62,7 +65,7 @@ type {{.Type|raw}}Impl struct {
 }
 
 var methodHandlers = []MethodHandler{
-	&QueryAnnotationMethodHandler{}, &BuildInMethodHandler{}, &RuleMethodHandler{},
+	&QueryAnnotationMethodHandler{}, &BuildInMethodHandler{},
 }
 
 func GenerateMethod(context *generator.Context, methodArgs *gencore.MethodArgs,

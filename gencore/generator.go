@@ -21,7 +21,7 @@ var NameSystemRaw = "raw"
 var DefaultNameSystems = namer.NameSystems{
 	NameSystemPublic:  namer.NewPublicNamer(0),
 	NameSystemPrivate: namer.NewPrivateNamer(0),
-	NameSystemRaw:     namer.NewRawNamer("", nil),
+	NameSystemRaw:     NewRawNamer("", nil),
 }
 
 func Args() *args.GeneratorArgs {
@@ -33,7 +33,7 @@ func Args() *args.GeneratorArgs {
 	curDir, err := os.Getwd()
 	klog.Infoln("Current Dir:", curDir)
 	if err != nil {
-		klog.Fatalf("Error: %v", err)
+		klog.Fatalf("error: %v", err)
 	}
 	//TODO 这里要增加自动设置InputDirs的逻辑
 	klog.Infoln("Input Dir:", arguments.InputDirs)
@@ -46,7 +46,7 @@ func Packages() (types.Universe, error) {
 
 	parserBuilder, err := arguments.NewBuilder()
 	if err != nil {
-		klog.Fatalf("Error: %v", err)
+		klog.Fatalf("error: %v", err)
 	}
 	return parserBuilder.FindTypes()
 }
@@ -79,28 +79,33 @@ func NewTypeArgs(typ *types.Type) *TypeArgs {
 }
 
 type MethodArgs struct {
-	TypeName      string
-	TypeShortName string
-	Type          *types.Type
-	MethodName    string
-	Method        *types.Type
-	ParamNames    []string
-	Params        []*types.Type
-	ResultNames   []string
-	Results       []*types.Type
+	TypeName        string
+	TypeShortName   string
+	Type            *types.Type
+	TypeAnnotations map[string]Annotation
+	MethodName      string
+	Method          *types.Type
+	ParamNames      []string
+	Params          []*types.Type
+	ResultNames     []string
+	Results         []*types.Type
+	Extra           map[string]any
 }
 
-func NewMethodArgs(typeName string, typ *types.Type, methodName string, methodType *types.Type) *MethodArgs {
+func NewMethodArgs(typeName string, typ *types.Type, typeAnnotations map[string]Annotation,
+	methodName string, methodType *types.Type) *MethodArgs {
 	return &MethodArgs{
-		TypeName:      typeName,
-		TypeShortName: strings.ToLower(typeName[0:1]),
-		Type:          typ,
-		MethodName:    methodName,
-		Method:        methodType,
-		ParamNames:    methodType.Signature.ParameterNames,
-		Params:        methodType.Signature.Parameters,
-		ResultNames:   methodType.Signature.ResultNames,
-		Results:       methodType.Signature.Results,
+		TypeName:        typeName,
+		TypeShortName:   strings.ToLower(typeName[0:1]),
+		Type:            typ,
+		TypeAnnotations: typeAnnotations,
+		MethodName:      methodName,
+		Method:          methodType,
+		ParamNames:      methodType.Signature.ParameterNames,
+		Params:          methodType.Signature.Parameters,
+		ResultNames:     methodType.Signature.ResultNames,
+		Results:         methodType.Signature.Results,
+		Extra:           make(map[string]any, 0),
 	}
 }
 

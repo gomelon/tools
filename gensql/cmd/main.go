@@ -23,7 +23,7 @@ func main() {
 		gencore.NameSystemPublic,
 		Packages,
 	); err != nil {
-		klog.Fatalf("Error: %v", err)
+		klog.Fatalf("error: %v", err)
 	}
 	klog.V(2).Info("Completed successfully.")
 }

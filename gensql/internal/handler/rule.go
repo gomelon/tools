@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gomelon/tools/gencore"
-	"github.com/gomelon/tools/gensql/internal/handler/rule"
 	"io"
 	"k8s.io/gengo/generator"
 	"k8s.io/gengo/namer"
@@ -13,8 +12,9 @@ type RuleMethodHandler struct {
 
 func (r *RuleMethodHandler) HandleMethod(context *generator.Context, methodArgs *gencore.MethodArgs,
 	writer io.Writer, importTracker namer.ImportTracker) bool {
-	for _, handler := range RuleHandlers {
-		handled := handler.HandleRule(context, methodArgs, writer, importTracker)
+	for _, handlerFactory := range HandlerFactories {
+		handler := handlerFactory.Create(context, methodArgs, writer, importTracker)
+		handled := handler.HandleRule()
 		if handled {
 			return true
 		}
@@ -22,8 +22,13 @@ func (r *RuleMethodHandler) HandleMethod(context *generator.Context, methodArgs 
 	return false
 }
 
-var RuleHandlers = []RuleHandler{&rule.QueryRuleHandler{}}
+type RuleMethodHandlerFactory interface {
+	Create(genCtx *generator.Context, methodArgs *gencore.MethodArgs,
+		writer io.Writer, tracker namer.ImportTracker) Handler
+}
 
-type RuleHandler interface {
-	HandleRule(context *generator.Context, methodArgs *gencore.MethodArgs, writer io.Writer, tracker namer.ImportTracker) bool
+var HandlerFactories = []RuleMethodHandlerFactory{&QueryRuleHandlerFactory{}}
+
+type Handler interface {
+	HandleRule() bool
 }

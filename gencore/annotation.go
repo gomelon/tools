@@ -14,6 +14,7 @@ type Annotation interface {
 	Kinds() []types.Kind
 	Namespace() string
 	Name() string
+	FullName() string
 }
 
 type AnnotationParser interface {
